@@ -89,8 +89,7 @@ may already have executed.
 
 Open the requested scene in the editor before issuing scene commands. Prefab
 overrides should be authored through the editor; unpack an instance before direct
-object/component edits. Arbitrary editor code execution, viewport screenshots
-and automatic emulator launching are not provided by this bridge.
+object/component edits. Arbitrary editor code execution and viewport screenshots are not provided by this bridge.
 
 ## Offline workflows and builds
 
@@ -98,6 +97,16 @@ The companion server can edit scene JSON, C++ scripts, graphs, prefabs and asset
 configuration without the bridge, and invoke Pyrite64's documented CLI build or
 clean command. Close the game project in the editor before offline file edits.
 ROM builds still require an installed, working N64 toolchain.
+
+The companion MCP tool `build_and_run` (or `build_project` with `run=true`) saves
+live changes, builds the game, and launches its fresh ROM in Ares. Set the
+project emulator path to Ares, provide `ares_path` in the tool call, configure
+`--ares`/`PYRITE64_ARES`, or put Ares on `PATH`. Failed builds and missing, empty
+or unchanged ROMs are not launched. The tool reports emulator startup separately
+from build success. Restart the MCP server after updating the companion repository
+to discover the new tool. When the server is managed by the Windows editor, Ares
+is part of its process tree and closes when that server is stopped.
+
 
 ## Local files
 

@@ -12,3 +12,6 @@ pyrite64.exe
 *.dll
 preferences.json
 *.AppImage
+# Local MCP mailbox and source-installation backups
+.pyrite64-mcp/
+*.mcp-backup

@@ -91,6 +91,20 @@ Open the requested scene in the editor before issuing scene commands. Prefab
 overrides should be authored through the editor; unpack an instance before direct
 object/component edits. Arbitrary editor code execution and viewport screenshots are not provided by this bridge.
 
+## Update game source while connected
+
+The companion `write_project_file` tool supports live edits to `.cpp`, `.c`,
+`.h` and `.hpp` files under `src/user`. Keep the scene and MCP server open: file
+writes retain backups and revision checks, verify the editor connection, and
+do not save or reload the scene or assets. Unsaved scene changes stay in memory.
+Writes are blocked during a build. The editor watches C++ scripts; compile the
+game again with `build_project` or `build_and_run` to apply source changes.
+
+Scene JSON, generated code, graph/prefab files and other editor-managed files
+still require the appropriate live scene tools or offline editing. This feature
+updates game source, not the editor or MCP implementation. Load the updated
+companion server once; subsequent game-source edits need no restart.
+
 ## Offline workflows and builds
 
 The companion server can edit scene JSON, C++ scripts, graphs, prefabs and asset

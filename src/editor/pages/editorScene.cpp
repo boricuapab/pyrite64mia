@@ -8,6 +8,7 @@
 #include "imgui.h"
 #include "imgui_internal.h"
 #include "../actions.h"
+#include "../mcpServer.h"
 #include "../undoRedo.h"
 #include "../selectionUtils.h"
 #include "../../context.h"
@@ -484,6 +485,8 @@ void Editor::Scene::draw()
         ImGui::EndMenu();
       }
 
+      Editor::MCP::drawMenu();
+
       if(ImGui::BeginMenu("View"))
       {
         if(ImGui::MenuItem(ICON_MDI_PLUS " New Viewport")) wantNewViewport = true;
@@ -555,6 +558,8 @@ void Editor::Scene::draw()
     ImGui::End();
   }
   ImGui::PopStyleVar();
+
+  Editor::MCP::drawDialogs();
 
   // Bottom Status bar
   ImGui::SetNextWindowPos({0, io.DisplaySize.y - HEIGHT_STATUS_BAR}, ImGuiCond_Always, {0.0f, 0.0f});

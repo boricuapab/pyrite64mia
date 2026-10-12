@@ -29,6 +29,9 @@ void Editor::Preferences::load()
     else applyKeymapPreset();
 
     themeName = doc.value("themeName", DEF.themeName);
+    mcpServerDirectory = doc.value("mcpServerDirectory", DEF.mcpServerDirectory);
+    mcpServerPort = doc.value("mcpServerPort", DEF.mcpServerPort);
+    if (mcpServerPort < 1 || mcpServerPort > 65535) mcpServerPort = 8974;
     recentProjects.clear();
     if (doc.contains("recentProjects") && doc["recentProjects"].is_array()) {
       for (const auto &e : doc["recentProjects"]) {
@@ -77,6 +80,8 @@ void Editor::Preferences::save()
     .set("keymapPreset", (uint32_t)keymapPreset)
     .set("keymap", keymap.serialize(keymapPreset))
     .set("themeName", themeName)
+    .set("mcpServerDirectory", mcpServerDirectory)
+    .set("mcpServerPort", mcpServerPort)
     .set("recentProjects", recents)
     .set("zoomSpeedMeters", zoomSpeed)
     .set("moveSpeedMeters", moveSpeed)

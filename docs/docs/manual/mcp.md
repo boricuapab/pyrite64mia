@@ -11,6 +11,26 @@ HTTP endpoint is `http://127.0.0.1:8974/mcp`; stdio is also available.
 Port 8974 belongs to that server. The editor bridge uses a local JSON mailbox,
 with all commands executed on the editor's main thread.
 
+## Start from the editor
+
+Open a game project and choose **MCP > Start Server** in the top menu. On first
+use, select the companion `pyrata64-mcp` repository folder using **Browse...**.
+Set up that repository's `.venv` with its documented launcher/setup instructions
+first. The default port is **8974**. **Save and Start** stores the selection in
+local editor preferences and starts live MCP for the open project. No terminal
+or environment-variable setup is needed for this workflow.
+
+The menu shows Starting/Running/Stopped status and provides **Stop Server**,
+**Server Settings**, **Server Log**, **Copy MCP URL** and commands for Codex and
+Claude Code. Startup failures, including missing dependencies or an occupied
+port, are visible in the log. The server process is owned by the editor and
+stops on project close/change or editor exit. On Windows its process tree is
+managed together, including any CLI build children. An externally launched
+server is never stopped by this menu. No dependencies are downloaded by the editor.
+
+Repository locations and port selections are saved only in local preferences.
+Source files contain no user-specific installation or game paths.
+
 ## Enable the bridge
 
 Build Pyrite64 normally from this checkout. The bridge is already integrated

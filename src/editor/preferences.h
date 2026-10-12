@@ -22,6 +22,8 @@ namespace Editor
     Input::KeymapPreset keymapPreset{Input::KeymapPreset::Blender};
     Input::Keymap keymap{};
     std::string themeName{"dark"};
+    std::string mcpServerDirectory{};
+    int mcpServerPort{8974};
     std::vector<RecentProject> recentProjects{};
     // meters, the viewport works in real-world units
     float zoomSpeed = 0.01f;

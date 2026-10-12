@@ -13,6 +13,8 @@
 namespace Pyrite64MCP {
 using Json = nlohmann::json;
 namespace fs = std::filesystem;
+// In-app opt-in, independent of external-launch environment settings.
+inline std::string directoryOverride;
 
 inline void deserializeScene(Project::Scene& scene, Json document) {
   // The pinned fork defines GLM_FORCE_QUAT_DATA_XYZW in CMakeLists.txt.
@@ -104,7 +106,7 @@ inline Json dispatch(const std::string& action, const Json& args) {
 }
 
 inline void poll() {
-  const char* configured = std::getenv("PYRITE64_MCP_BRIDGE_DIR");
+  const char* configured = directoryOverride.empty() ? std::getenv("PYRITE64_MCP_BRIDGE_DIR") : directoryOverride.c_str();
   if (!configured || !*configured) return; // Explicit opt-in only.
   static auto last = std::chrono::steady_clock::time_point{};
   auto now = std::chrono::steady_clock::now();

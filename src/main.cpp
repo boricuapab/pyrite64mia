@@ -1,4 +1,5 @@
 #include "pyrite64_mcp_bridge.h"
+#include "editor/mcpServer.h"
 /**
 * @copyright 2025 - Max Bebök
 * @license MIT
@@ -306,6 +307,7 @@ int main(int argc, char** argv)
     while(!done) {
 
       auto frameStart = SDL_GetTicksNS();
+      Editor::MCP::tick();
       Pyrite64MCP::poll();
 
       // force default theme for the launcher (i'm lazy)
@@ -498,6 +500,7 @@ int main(int argc, char** argv)
     ctx.editorScene.reset();
   }
 
+  Editor::MCP::stop();
   editorWindow.saveState();
 
   // needs to be destroyed before GPU teardown

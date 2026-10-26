@@ -3,6 +3,7 @@
 * @license MIT
 */
 #include "actions.h"
+#include "script/scriptHost.h"
 
 #include <cstdlib>
 #include <unordered_set>
@@ -106,10 +107,12 @@ namespace Editor::Actions
        Utils::Logger::log("Open Project: " + path);
        // Remember the outgoing project's open windows before it is torn down.
        if(ctx.editorScene && ctx.project) ctx.editorScene->onProjectClosing();
+       ScriptHost::stop();
        delete ctx.project;
        UndoRedo::getHistory().clear();
        try {
          ctx.project = new Project::Project(path);
+         ScriptHost::start(*ctx.project);
          // Custom node definitions (<project>/nodes/*.js) are loaded by the Project ctor.
          if(ctx.project) {
            // The one place a project is checked for outdated files: everything past this point

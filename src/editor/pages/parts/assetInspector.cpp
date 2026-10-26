@@ -3,6 +3,7 @@
 * @license MIT
 */
 #include "assetInspector.h"
+#include "assets/scriptEditor.h"
 #include "imgui.h"
 #include "../editorScene.h"
 #include "misc/cpp/imgui_stdlib.h"
@@ -122,12 +123,14 @@ void Editor::AssetInspector::draw() {
   bool hasAssetConf = true;
   if (asset->type == FileType::CODE_OBJ
     || asset->type == FileType::CODE_GLOBAL
-    || asset->type == FileType::PREFAB)
+    || asset->type == FileType::PREFAB
+    || asset->type == FileType::EDITOR_SCRIPT)
   {
     hasAssetConf = false;
   }
 
   ImGui::Text("File: %s", asset->name.c_str());
+
   if (hasAssetConf && ImGui::CollapsingHeader("Settings", ImGuiTreeNodeFlags_DefaultOpen))
   {
     auto confBefore = asset->conf.serialize();
@@ -306,6 +309,9 @@ void Editor::AssetInspector::draw() {
     }
     if (asset->type == FileType::MUSIC_XM) {
       ImGui::TextDisabled("No preview available for XM modules");
+    }
+    if (asset->type == FileType::EDITOR_SCRIPT) {
+      ScriptEditor::draw(*asset);
     }
   }
 }

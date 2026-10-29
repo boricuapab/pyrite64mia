@@ -3,6 +3,7 @@
 * @license MIT
 */
 #include "../components.h"
+#include "../../../editor/pages/parts/assets/textureEditor.h"
 #include "../../../context.h"
 #include "../../../editor/imgui/helper.h"
 #include "../../../editor/imgui/notification.h"
@@ -244,8 +245,9 @@ namespace Project::Component::Code
               };
             
             if(field.type == Utils::DataType::ASSET_SPRITE) {
-              const auto &assets = ctx.project->getAssets().getTypeEntries(FileType::IMAGE);
-              ImTable::addAssetVecComboBox("", assets, uuid, validationFunc);
+              if(Editor::TextureEditor::drawTexturePicker(name.c_str(), uuid, "")) {
+                validationFunc(uuid);
+              }
             } else if(field.type == Utils::DataType::OBJECT_REF) {
               // @TODO: do this in scene itself
               auto &map = ctx.project->getScenes().getLoadedScene()->objectsMap;

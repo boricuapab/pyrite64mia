@@ -6,11 +6,13 @@
 #include "../../utils/logger.h"
 #include "../../utils/fs.h"
 #include "../actions.h"
+#include "../undoRedo.h"
 #include "../../project/scene/object.h"
 #include "../../project/scene/scene.h"
 #include "../pages/editorScene.h"
 #include "../../context.h"
-#include "quickjs.h"
+#include "scriptUtils.h"
+#include "impl/impl.h"
 #include <algorithm>
 
 namespace
@@ -18,14 +20,6 @@ namespace
   namespace Act = Editor::Actions;
 
   Editor::ScriptHost::Context js{};
-
-  std::string toString(JSValueConst val)
-  {
-    const char* str = JS_ToCString(js.ctx, val);
-    std::string res = str ? str : "";
-    if(str)JS_FreeCString(js.ctx, str);
-    return res;
-  }
 
   #define JS_LAMBDA(name, args, fn) JS_CFUNC_DEF(name, args, (\
     [](JSContext *c, JSValueConst thisVal, int argc, JSValueConst *argv) -> JSValue fn \
@@ -37,7 +31,7 @@ namespace
     std::vector<JSCFunctionListEntry> entries{};
   };
 
-  const std::array<APIObjDef, 3> APIs{
+  const std::array<APIObjDef, 4> APIs{
     APIObjDef
     {
       .name = "editor",
@@ -57,6 +51,19 @@ namespace
         JS_LAMBDA("close", 0, { return JS_NewBool(c, Act::call(Act::Type::PROJECT_CLOSE)); }),
         JS_LAMBDA("clean", 0, { return JS_NewBool(c, Act::call(Act::Type::PROJECT_CLEAN)); }),
         JS_LAMBDA("reloadAssets", 0, { return JS_NewBool(c, Act::call(Act::Type::ASSETS_RELOAD)); }),
+        JS_CFUNC_DEF("addAction", 3, Editor::ScriptHost::Impl::addAction),
+        JS_CFUNC_DEF("getSelObjects", 0, Editor::ScriptHost::Impl::getSelectedObjects),
+      }
+    },{
+      .name = "history",
+      .entries = {
+        JS_LAMBDA("markChanged", 1, {
+          auto desc = argc > 0 ? toString(argv[0], js) : std::string{};
+          Editor::UndoRedo::getHistory().markChanged(desc.empty() ? "Script Change" : desc);
+          return JS_UNDEFINED;
+        }),
+        JS_LAMBDA("undo", 0, { return JS_NewBool(c, Editor::UndoRedo::getHistory().undo()); }),
+        JS_LAMBDA("redo", 0, { return JS_NewBool(c, Editor::UndoRedo::getHistory().redo()); }),
       }
     },{
       .name = "console",
@@ -66,7 +73,7 @@ namespace
           return JS_UNDEFINED;
         }),
         JS_LAMBDA("log", 1, {
-          auto str = argc > 0 ? toString(argv[0]) : std::string{};
+          auto str = argc > 0 ? toString(argv[0], js) : std::string{};
           Utils::Logger::log(str);
           return JS_UNDEFINED;
         })
@@ -114,6 +121,10 @@ namespace Editor::ScriptHost
       return false;
     }
 
+    Impl::Vec3::init(js.ctx);
+    Impl::Quat::init(js.ctx);
+    Impl::initObjects(js.ctx);
+
     JSValue global = JS_GetGlobalObject(js.ctx);
     
     for(auto &def : APIs) {
@@ -125,12 +136,21 @@ namespace Editor::ScriptHost
     JS_FreeValue(js.ctx, global);
 
     Utils::Logger::log("Editor scripts: context started");
+
+    for(auto &entry : project.getAssets().getTypeEntries(Project::FileType::EDITOR_SCRIPT)) {
+      if(!entry.conf.autoRun)continue;
+      Utils::Logger::log("Auto-running script: " + entry.name);
+      auto res = runFile(entry.path);
+      if(!res.success)Utils::Logger::log(res.text, Utils::Logger::LEVEL_ERROR);
+    }
     return true;
   }
 
   void stop()
   {
     if(!js.rt)return;
+
+    Impl::clearActions(js.ctx);
 
     JS_FreeContext(js.ctx);
     JS_FreeRuntime(js.rt);
@@ -151,11 +171,11 @@ namespace Editor::ScriptHost
 
     if(JS_IsException(val)) {
       JSValue ex = JS_GetException(js.ctx);
-      std::string text = toString(ex);
+      std::string text = toString(ex, js);
       JSValue stack = JS_GetPropertyStr(js.ctx, ex, "stack");
 
       if(JS_IsString(stack)) {
-        text += "\n" + toString(stack);
+        text += "\n" + toString(stack, js);
       }
       JS_FreeValue(js.ctx, stack);
       JS_FreeValue(js.ctx, ex);
@@ -165,10 +185,10 @@ namespace Editor::ScriptHost
     EvalResult res{.success = true};
     if(JS_IsObject(val) && !JS_IsFunction(js.ctx, val)) {
       JSValue json = JS_JSONStringify(js.ctx, val, JS_UNDEFINED, JS_UNDEFINED);
-      res.text = JS_IsException(json) ? toString(val) : toString(json);
+      res.text = JS_IsException(json) ? toString(val, js) : toString(json, js);
       JS_FreeValue(js.ctx, json);
     } else {
-      res.text = toString(val);
+      res.text = toString(val, js);
     }
     JS_FreeValue(js.ctx, val);
     return res;

@@ -295,6 +295,13 @@ add_executable(pyrite64 src/main.cpp
         src/project/graph/jsNodeHost.cpp
         src/editor/script/scriptHost.h
         src/editor/script/scriptHost.cpp
+        src/editor/script/impl/impl.h
+        src/editor/script/impl/actions.cpp
+        src/editor/script/impl/object.cpp
+        src/editor/script/impl/vec.cpp
+        src/editor/script/impl/quat.cpp
+        src/editor/actionSearch.h
+        src/editor/actionSearch.cpp
         src/project/graph/valueTypes.h
         src/project/graph/valueTypes.cpp
         src/project/graph/graph.h
